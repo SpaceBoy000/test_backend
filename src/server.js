@@ -126,28 +126,28 @@ const poolCreatedABI_v3 = {
     "type": "event"
 }
 
-// const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
+const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
 
-//     try {
-//         // const poolContract = new web3.eth.Contract(UNISWAP_V2_POOL_ABI, pairAddress);
-//         const poolContract = new ethers.Contract(pairAddress, UNISWAP_V2_POOL_ABI, provider);
+    try {
+        // const poolContract = new web3.eth.Contract(UNISWAP_V2_POOL_ABI, pairAddress);
+        const poolContract = new ethers.Contract(pairAddress, UNISWAP_V2_POOL_ABI, provider);
 
-//         var promises = [];
-//         // promises.push(poolContract.methods.token0().call())
-//         // promises.push(poolContract.methods.token1().call())
-//         promises.push(poolContract.token0())
-//         promises.push(poolContract.token1())
+        var promises = [];
+        // promises.push(poolContract.methods.token0().call())
+        // promises.push(poolContract.methods.token1().call())
+        promises.push(poolContract.token0())
+        promises.push(poolContract.token1())
 
-//         const result = await Promise.all(promises)
+        const result = await Promise.all(promises)
 
-//         return { tokenA: result[0], tokenB: result[1] }
+        return { tokenA: result[0], tokenB: result[1] }
 
-//     } catch (err) {
-//         console.log(err)
-//     }
+    } catch (err) {
+        console.log(err)
+    }
 
-//     return null;
-// };
+    return null;
+};
 
 // const getTokensByUniv3PoolAddress = async (provider, pairAddress) => {
 
