@@ -1,4 +1,4 @@
-// var Web3 = require('web3');
+var Web3 = require('web3');
 // const utils = require('./utils');
 
 // let g_lpInfo = [];
