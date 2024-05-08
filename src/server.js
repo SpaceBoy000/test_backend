@@ -340,7 +340,6 @@ const parseLog = async (web3, log, callback) => {
 }
 
 const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
-
     try {
         web3WS.eth.getPastLogs({
             fromBlock: 35807779,
@@ -444,8 +443,8 @@ const getData_on_eth = async () => {
     setTimeout(getData_on_eth, scanCycle);
 }
 
-async function main() {
-    await PairCreationMonitoring(0, 0);
+function main() {
+    PairCreationMonitoring(0, 0);
     // getBlockNumber_on_eth();
     // getData_on_eth();
 }
