@@ -292,10 +292,10 @@ const parseLog = async (provider, log, callback) => {
     console.log("log.topics[1]", log.topics[1])
     const logCode = log.topics[0]
 
-    // const toAddress = log.topics[1]?.toLowerCase()
-    // if (!toAddress) {
-    //     return
-    // }
+    const toAddress = log.topics[1].toLowerCase()
+    if (!toAddress) {
+        return
+    }
 
     // switch (logCode) {
 
