@@ -300,7 +300,7 @@ const parseLog = async (provider, log, callback) => {
     switch (logCode) {
 
         case LOG_MINT_V2_KECCACK: {
-            const a = utils.addressToHex(uniswapV2RouterAddress);
+            // const a = utils.addressToHex(uniswapV2RouterAddress);
             // if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
             //     // const iface_v2 = new ethers.utils.Interface(mintABI_v2);
             //     // // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
