@@ -285,149 +285,149 @@ const poolCreatedABI_v3 = {
 //     return false
 // }
 
-const parseLog = async (provider, log, callback) => {
+// const parseLog = async (provider, log, callback) => {
 
-    console.log("===================parseLog=====================")
-    console.log("log.topics[0]", log)
-    console.log("log.topics[1]", log.topics[1])
-    const logCode = log.topics[0]
+//     console.log("===================parseLog=====================")
+//     console.log("log.topics[0]", log)
+//     console.log("log.topics[1]", log.topics[1])
+//     const logCode = log.topics[0]
 
-    const toAddress = log.topics[1]?.toLowerCase()
-    if (!toAddress) {
-        return
-    }
+//     const toAddress = log.topics[1]?.toLowerCase()
+//     if (!toAddress) {
+//         return
+//     }
 
-    switch (logCode) {
+//     switch (logCode) {
 
-        case LOG_MINT_V2_KECCACK: {
+//         case LOG_MINT_V2_KECCACK: {
 
-            if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
-                const iface_v2 = new ethers.utils.Interface(mintABI_v2);
-                // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
-                const logData = iface_v2.decodeEventLog("Mint", log.data, log.topics.slice(0));
-                const pairAddress = log.address
+//             if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
+//                 const iface_v2 = new ethers.utils.Interface(mintABI_v2);
+//                 // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
+//                 const logData = iface_v2.decodeEventLog("Mint", log.data, log.topics.slice(0));
+//                 const pairAddress = log.address
 
-                const tokenResult = await getTokensByUniv2PoolAddress(provider, pairAddress)
-                if (!tokenResult) {
-                    return
-                }
+//                 const tokenResult = await getTokensByUniv2PoolAddress(provider, pairAddress)
+//                 if (!tokenResult) {
+//                     return
+//                 }
 
-                const { tokenA, tokenB } = tokenResult
-                const tokenA_amount = logData.amount0.toString()
-                const tokenB_amount = logData.amount1.toString()
+//                 const { tokenA, tokenB } = tokenResult
+//                 const tokenA_amount = logData.amount0.toString()
+//                 const tokenB_amount = logData.amount1.toString()
 
-                let poolInfo = {};
-                if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
+//                 let poolInfo = {};
+//                 if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
 
-                    poolInfo.routerAddress = uniswapV2RouterAddress
-                    poolInfo.version = 'v2'
-                    checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
-                        console.log('result: ', result);
-                        if (result) {
-                            await applyTokenSymbols(provider, poolInfo)
-                            let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
+//                     poolInfo.routerAddress = uniswapV2RouterAddress
+//                     poolInfo.version = 'v2'
+//                     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
+//                         console.log('result: ', result);
+//                         if (result) {
+//                             await applyTokenSymbols(provider, poolInfo)
+//                             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
 
-                            console.log("------------");
-                            console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
-                            console.log(`${scanUrl}/tx/${log.transactionHash}`);
-                            console.log("------------");
-                            console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
+//                             console.log("------------");
+//                             console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
+//                             console.log(`${scanUrl}/tx/${log.transactionHash}`);
+//                             console.log("------------");
+//                             console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
 
-                            if (callback) {
-                                callback(poolInfo, 'v2')
-                            }
+//                             if (callback) {
+//                                 callback(poolInfo, 'v2')
+//                             }
 
-                            if (g_lpInfo.length >= 10) {
-                                g_lpInfo = g_lpInfo.slice(1);
-                                g_lpInfo.push(poolInfo);
-                            } else {
-                                g_lpInfo.push(poolInfo);
-                            }
-                        }
-                    })
-                }
-            }
-        }
-            break;
+//                             if (g_lpInfo.length >= 10) {
+//                                 g_lpInfo = g_lpInfo.slice(1);
+//                                 g_lpInfo.push(poolInfo);
+//                             } else {
+//                                 g_lpInfo.push(poolInfo);
+//                             }
+//                         }
+//                     })
+//                 }
+//             }
+//         }
+//             break;
 
-        case LOG_MINT_V3_KECCACK: {
+//         case LOG_MINT_V3_KECCACK: {
 
-        }
+//         }
 
-            break;
-    }
-}
+//             break;
+//     }
+// }
 
-const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
+// const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
 
-    try {
-        provider.getLogs({
-            fromBlock: 35807779,
-            toBlock: 35807780,
-            // address: uniswapV2RouterAddress,
-            topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
-        }, function (error, events) {
-            console.log("Fail: ", events);
-        }).then(async function (events) {
-            console.log("Success: ", events);
+//     try {
+//         provider.getLogs({
+//             fromBlock: 35807779,
+//             toBlock: 35807780,
+//             // address: uniswapV2RouterAddress,
+//             topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
+//         }, function (error, events) {
+//             console.log("Fail: ", events);
+//         }).then(async function (events) {
+//             console.log("Success: ", events);
 
-            if (events.length > 0) {
-                await parseLog(provider, events[0]);
-            }
+//             if (events.length > 0) {
+//                 await parseLog(provider, events[0]);
+//             }
 
 
-        }).catch((err) => {
-            console.error('Error: ', err);
-        });
+//         }).catch((err) => {
+//             console.error('Error: ', err);
+//         });
 
-        // Promise.all(transferPromises)
-        //     .then(async (transferEventslist) => {
-        //         for (let idx1 = 0; idx1 < transferEventslist.length; idx1++) {
-        //             const EventlistOfMultipleTokens = transferEventslist[idx1];
-        //             if (EventlistOfMultipleTokens.length > 0) {
-        //                 let i;
-        //                 for (i = 0; i < EventlistOfMultipleTokens.length; i++) {
-        //                     let data = EventlistOfMultipleTokens[i];
-        //                     let objTemp = data.returnValues;
-        //                     // console.log("data.returnValues  ===> ", data.returnValues);
-        //                     objTemp.transactionHash = data.transactionHash;
-        //                     if (compareObjects(TransferTemp, objTemp) === false) {
-        //                         TransferTemp = objTemp;
+//         // Promise.all(transferPromises)
+//         //     .then(async (transferEventslist) => {
+//         //         for (let idx1 = 0; idx1 < transferEventslist.length; idx1++) {
+//         //             const EventlistOfMultipleTokens = transferEventslist[idx1];
+//         //             if (EventlistOfMultipleTokens.length > 0) {
+//         //                 let i;
+//         //                 for (i = 0; i < EventlistOfMultipleTokens.length; i++) {
+//         //                     let data = EventlistOfMultipleTokens[i];
+//         //                     let objTemp = data.returnValues;
+//         //                     // console.log("data.returnValues  ===> ", data.returnValues);
+//         //                     objTemp.transactionHash = data.transactionHash;
+//         //                     if (compareObjects(TransferTemp, objTemp) === false) {
+//         //                         TransferTemp = objTemp;
 
-        //                         const from = TransferTemp.from;
-        //                         const to = TransferTemp.to;
-        //                         const value = TransferTemp.value;
-        //                         const txHash = TransferTemp.transactionHash;
-        //                         const tokenDecimals = docs[idx1].alttokendecimals;
-        //                         if (to.toString().toLowerCase() === docs[idx1].pooladdress.toString().toLowerCase()) {
-        //                             const ethunitname = Object.keys(ETHER_UNITS).find(key => Math.pow(10, tokenDecimals).toString() == ETHER_UNITS[key]);
-        //                             let tokenReal = web3WS.utils.fromWei(value.toString(), ethunitname.toString());
+//         //                         const from = TransferTemp.from;
+//         //                         const to = TransferTemp.to;
+//         //                         const value = TransferTemp.value;
+//         //                         const txHash = TransferTemp.transactionHash;
+//         //                         const tokenDecimals = docs[idx1].alttokendecimals;
+//         //                         if (to.toString().toLowerCase() === docs[idx1].pooladdress.toString().toLowerCase()) {
+//         //                             const ethunitname = Object.keys(ETHER_UNITS).find(key => Math.pow(10, tokenDecimals).toString() == ETHER_UNITS[key]);
+//         //                             let tokenReal = web3WS.utils.fromWei(value.toString(), ethunitname.toString());
 
-        //                             await web3WS.eth.getTransaction(txHash)
-        //                                 .then(responsOfHash => {
+//         //                             await web3WS.eth.getTransaction(txHash)
+//         //                                 .then(responsOfHash => {
 
-        //                                     console.log("tx caller ==> ", responsOfHash.from);
-        //                                     console.log("send amount ==> ", tokenReal);
+//         //                                     console.log("tx caller ==> ", responsOfHash.from);
+//         //                                     console.log("send amount ==> ", tokenReal);
 
-        //                                 }).catch(error => {
-        //                                     console.log("bsc recordBuyEvent  : ", error.message);
-        //                                 });
-        //                         }
-        //                     }
-        //                 }
-        //             } else {
-        //                 return;
-        //             }
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //     })
+//         //                                 }).catch(error => {
+//         //                                     console.log("bsc recordBuyEvent  : ", error.message);
+//         //                                 });
+//         //                         }
+//         //                     }
+//         //                 }
+//         //             } else {
+//         //                 return;
+//         //             }
+//         //         }
+//         //     })
+//         //     .catch((error) => {
+//         //         console.log(error);
+//         //     })
 
-    } catch (error) {
-        console.log("Something went wrong 2: " + error.message)
-    }
-}
+//     } catch (error) {
+//         console.log("Something went wrong 2: " + error.message)
+//     }
+// }
 
 var scanBlockNumber = 0;
 var maxBlockNumber = 0;
