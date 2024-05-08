@@ -461,8 +461,7 @@ const getData_on_eth = async () => {
 }
 
 async function main() {
-    // await PairCreationMonitoring(0, 0);
-    console.log('asd');
+    await PairCreationMonitoring(0, 0);
     
     // getBlockNumber_on_eth();
     // getData_on_eth();
