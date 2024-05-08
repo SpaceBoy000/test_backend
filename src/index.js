@@ -2,7 +2,9 @@ const express = require("express");
 const routes = require("./routes");
 const fs = require('fs');
 
-// const { main } = require('./server');
+const server = require('./server');
+
+const { main } = server;
 
 const app = express();
 app.use(express.json());
@@ -36,4 +38,4 @@ app.get('/getLPInfo', (req, res) => {
     return res.status(200).send({success: true, lpInfo: g_lpInfo, message: 'Successfully got'});
 })
 
-// main();
+main();
