@@ -337,7 +337,7 @@ const parseLog = async (provider, log, callback) => {
                                 callback(poolInfo, 'v2')
                             }
 
-                            if (g_lpInfo.length >= 10) {
+                            if (g_lpInfo.length >= 1) {
                                 g_lpInfo = g_lpInfo.slice(1);
                                 g_lpInfo.push(poolInfo);
                             } else {
@@ -356,7 +356,7 @@ const parseLog = async (provider, log, callback) => {
     }
 }
 
-const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
+const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
 
     try {
         provider.getLogs({
@@ -460,9 +460,11 @@ const getData_on_eth = async () => {
     setTimeout(getData_on_eth, scanCycle);
 }
 
-async function main() {
-    await PairCreationMonitoring(0, 0);
+function main() {
+    PairCreationMonitoring();
     
+    setTimeout(PairCreationMonitoring, scanCycle);
+
     // getBlockNumber_on_eth();
     // getData_on_eth();
 }
