@@ -1,130 +1,130 @@
 const ethers = require('ethers');
 // const Web3 = require('web3');
-// const utils = require('./utils');
+const utils = require('./utils');
 
-// let g_lpInfo = [];
+let g_lpInfo = [];
 
-// const scanCycle = 12000;
+const scanCycle = 12000;
 
-// const chainId = 56;
-// const ETHEREUM_RPC_URL = chainId == 1 ? 'https://ethereum-rpc.publicnode.com' : chainId == 56 ? 'https://bscrpc.com' : '';
-// const scanUrl = chainId == 1 ? 'https://etherscan.io' : chainId == 56 ? 'https://bscscan.com' : chainId == 97 ? 'https://testnet.bscscan.com' : '';
+const chainId = 56;
+const ETHEREUM_RPC_URL = chainId == 1 ? 'https://ethereum-rpc.publicnode.com' : chainId == 56 ? 'https://bscrpc.com' : '';
+const scanUrl = chainId == 1 ? 'https://etherscan.io' : chainId == 56 ? 'https://bscscan.com' : chainId == 97 ? 'https://testnet.bscscan.com' : '';
 
-// // var web3WS = new Web3(ETHEREUM_RPC_URL);
-// const provider = new ethers.providers.JsonRpcProvider(ETHEREUM_RPC_URL);
+// var web3WS = new Web3(ETHEREUM_RPC_URL);
+const provider = new ethers.providers.JsonRpcProvider(ETHEREUM_RPC_URL);
 
-// const WETH_ADDRESS = chainId == 1 ? '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' : chainId == 56 ? '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c' : chainId == 97 ? '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd' : '';
-// const uniswapV2RouterAddress = chainId == 1 ? '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' : chainId == 56 ? '0x10ED43C718714eb63d5aA57B78B54704E256024E' : chainId == 97 ? '0xD99D1c33F9fC3444f8101754aBC46c52416550D1' : '';
-// const uniswapV3RouterAddress = '0xE592427A0AEce92De3Edee1F18E0157C05861564'
+const WETH_ADDRESS = chainId == 1 ? '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' : chainId == 56 ? '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c' : chainId == 97 ? '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd' : '';
+const uniswapV2RouterAddress = chainId == 1 ? '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' : chainId == 56 ? '0x10ED43C718714eb63d5aA57B78B54704E256024E' : chainId == 97 ? '0xD99D1c33F9fC3444f8101754aBC46c52416550D1' : '';
+const uniswapV3RouterAddress = '0xE592427A0AEce92De3Edee1F18E0157C05861564'
 
-// const ERC20_ABI = require('./abis/erc20.json');
-// const UNISWAP_V2_POOL_ABI = require('./abis/uniswapV2.json');
-// const UNISWAP_V3_POOL_ABI = require('./abis/uniswapV3.json');
+const ERC20_ABI = require('./abis/erc20.json');
+const UNISWAP_V2_POOL_ABI = require('./abis/uniswapV2.json');
+const UNISWAP_V3_POOL_ABI = require('./abis/uniswapV3.json');
 
-// const LOG_MINT_V2_KECCACK = '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f'
-// const LOG_MINT_V3_KECCACK = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde'
+const LOG_MINT_V2_KECCACK = '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f'
+const LOG_MINT_V3_KECCACK = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde'
 
-// const LOG_PAIR_CREATED_V2 = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9'
-// const LOG_PAIR_CREATED_V3 = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
+const LOG_PAIR_CREATED_V2 = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9'
+const LOG_PAIR_CREATED_V3 = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
 
-// const mintABI_v2 =
-// [{
-//     "anonymous": false,
-//     "inputs": [
-//         { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
-//         { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
-//         { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
-//     ],
-//     "name": "Mint",
-//     "type": "event"
-// }]
+const mintABI_v2 =
+[{
+    "anonymous": false,
+    "inputs": [
+        { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
+        { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+        { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "name": "Mint",
+    "type": "event"
+}]
 
-// const mintABI_v3 =
-// [{
-//     "anonymous": false,
-//     "inputs": [
-//         { "indexed": false, "internalType": "address", "name": "sender", "type": "address" },
-//         { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
-//         { "indexed": true, "internalType": "int24", "name": "tickLower", "type": "int24" },
-//         { "indexed": true, "internalType": "int24", "name": "tickUpper", "type": "int24" },
-//         { "indexed": false, "internalType": "uint128", "name": "amount", "type": "uint128" },
-//         { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
-//         { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
-//     ],
-//     "name": "Mint",
-//     "type": "event"
-// }]
+const mintABI_v3 =
+[{
+    "anonymous": false,
+    "inputs": [
+        { "indexed": false, "internalType": "address", "name": "sender", "type": "address" },
+        { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+        { "indexed": true, "internalType": "int24", "name": "tickLower", "type": "int24" },
+        { "indexed": true, "internalType": "int24", "name": "tickUpper", "type": "int24" },
+        { "indexed": false, "internalType": "uint128", "name": "amount", "type": "uint128" },
+        { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+        { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "name": "Mint",
+    "type": "event"
+}]
 
-// const poolCreatedABI_v2 = {
-//     "anonymous": false,
-//     "inputs": [
-//         {
-//             "indexed": true,
-//             "internalType": "address",
-//             "name": "token0",
-//             "type": "address"
-//         },
-//         {
-//             "indexed": true,
-//             "internalType": "address",
-//             "name": "token1",
-//             "type": "address"
-//         },
-//         {
-//             "indexed": false,
-//             "internalType": "address",
-//             "name": "pair",
-//             "type": "address"
-//         },
-//         {
-//             "indexed": false,
-//             "internalType": "uint256",
-//             "name": "",
-//             "type": "uint256"
-//         }
-//     ],
-//     "name": "PairCreated",
-//     "type": "event"
-// }
+const poolCreatedABI_v2 = {
+    "anonymous": false,
+    "inputs": [
+        {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token0",
+            "type": "address"
+        },
+        {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token1",
+            "type": "address"
+        },
+        {
+            "indexed": false,
+            "internalType": "address",
+            "name": "pair",
+            "type": "address"
+        },
+        {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+        }
+    ],
+    "name": "PairCreated",
+    "type": "event"
+}
 
-// const poolCreatedABI_v3 = {
+const poolCreatedABI_v3 = {
 
-//     "anonymous": false,
-//     "inputs": [
-//         {
-//             "indexed": true,
-//             "internalType": "address",
-//             "name": "token0",
-//             "type": "address"
-//         },
-//         {
-//             "indexed": true,
-//             "internalType": "address",
-//             "name": "token1",
-//             "type": "address"
-//         },
-//         {
-//             "indexed": true,
-//             "internalType": "uint24",
-//             "name": "fee",
-//             "type": "uint24"
-//         },
-//         {
-//             "indexed": false,
-//             "internalType": "int24",
-//             "name": "tickSpacing",
-//             "type": "int24"
-//         },
-//         {
-//             "indexed": false,
-//             "internalType": "address",
-//             "name": "pool",
-//             "type": "address"
-//         }
-//     ],
-//     "name": "PoolCreated",
-//     "type": "event"
-// }
+    "anonymous": false,
+    "inputs": [
+        {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token0",
+            "type": "address"
+        },
+        {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token1",
+            "type": "address"
+        },
+        {
+            "indexed": true,
+            "internalType": "uint24",
+            "name": "fee",
+            "type": "uint24"
+        },
+        {
+            "indexed": false,
+            "internalType": "int24",
+            "name": "tickSpacing",
+            "type": "int24"
+        },
+        {
+            "indexed": false,
+            "internalType": "address",
+            "name": "pool",
+            "type": "address"
+        }
+    ],
+    "name": "PoolCreated",
+    "type": "event"
+}
 
 // const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
 
