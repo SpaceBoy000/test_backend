@@ -170,120 +170,120 @@ const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
 //     return null;
 // };
 
-// const validatePool = (poolAddress, token0, amount0, token1, amount1, retVal) => {
+const validatePool = (poolAddress, token0, amount0, token1, amount1, retVal) => {
 
-//     if (!poolAddress || !token0 || !token1) {
-//         return false
-//     }
+    if (!poolAddress || !token0 || !token1) {
+        return false
+    }
 
-//     retVal.poolAddress = poolAddress
-//     // if (token0.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
-//     if (token0.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-//         retVal.primaryAddress = token1;
-//         retVal.primaryAmount = amount1;
-//         retVal.primaryIndex = 1;
-//         retVal.secondaryAddress = token0;
-//         retVal.secondaryAmount = amount0;
-//         // } else if (token1.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
-//     } else if (token1.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-//         retVal.primaryAddress = token0;
-//         retVal.primaryAmount = amount0;
-//         retVal.primaryIndex = 0;
-//         retVal.secondaryAddress = token1;
-//         retVal.secondaryAmount = amount1;
-//     } else {
-//         return false;
-//     }
+    retVal.poolAddress = poolAddress
+    // if (token0.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
+    if (token0.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
+        retVal.primaryAddress = token1;
+        retVal.primaryAmount = amount1;
+        retVal.primaryIndex = 1;
+        retVal.secondaryAddress = token0;
+        retVal.secondaryAmount = amount0;
+        // } else if (token1.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
+    } else if (token1.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
+        retVal.primaryAddress = token0;
+        retVal.primaryAmount = amount0;
+        retVal.primaryIndex = 0;
+        retVal.secondaryAddress = token1;
+        retVal.secondaryAmount = amount1;
+    } else {
+        return false;
+    }
 
-//     return true;
-// }
+    return true;
+}
 
-// const checkFirstMint = async (provider, poolInfo, transactionHash) => {
+const checkFirstMint = async (provider, poolInfo, transactionHash) => {
 
-//     return (async (resolve, reject) => {
+    return (async (resolve, reject) => {
 
-//         try {
-//             // const tokenContract = new web3.eth.Contract(ERC20_ABI, poolInfo.secondaryAddress);
-//             const tokenContract = new ethers.Contract(poolInfo.secondaryAddress, ERC20_ABI, provider);
-//             const balance = await tokenContract.balanceOf(poolInfo.poolAddress);
+        try {
+            // const tokenContract = new web3.eth.Contract(ERC20_ABI, poolInfo.secondaryAddress);
+            const tokenContract = new ethers.Contract(poolInfo.secondaryAddress, ERC20_ABI, provider);
+            const balance = await tokenContract.balanceOf(poolInfo.poolAddress);
 
-//             if (Number(balance) === Number(poolInfo.secondaryAmount)) {
-//                 resolve(true)
-//             } else {
+            if (Number(balance) === Number(poolInfo.secondaryAmount)) {
+                resolve(true)
+            } else {
 
-//                 let txReceipt = null;
-//                 try {
-//                     // txReceipt = await web3.eth.getTransactionReceipt(transactionHash);
-//                     const txReceipt = await provider.getTransactionReceipt(transactionHash);
+                let txReceipt = null;
+                try {
+                    // txReceipt = await web3.eth.getTransactionReceipt(transactionHash);
+                    const txReceipt = await provider.getTransactionReceipt(transactionHash);
 
-//                 } catch (error) {
-//                     resolve(false);
-//                 }
+                } catch (error) {
+                    resolve(false);
+                }
 
-//                 if (txReceipt) {
-//                     const poolCreatedLog = txReceipt.logs.find((item) => (item.topics[0] === LOG_PAIR_CREATED_V2 || item.topics[0] === LOG_PAIR_CREATED_V3));
-//                     if (poolCreatedLog && poolCreatedLog.topics && poolCreatedLog.topics.length > 0) {
+                if (txReceipt) {
+                    const poolCreatedLog = txReceipt.logs.find((item) => (item.topics[0] === LOG_PAIR_CREATED_V2 || item.topics[0] === LOG_PAIR_CREATED_V3));
+                    if (poolCreatedLog && poolCreatedLog.topics && poolCreatedLog.topics.length > 0) {
 
-//                         const isV2 = (poolCreatedLog.topics[0] === LOG_PAIR_CREATED_V2)
-//                         console.log('isV2: ', isV2);
-//                         const iface_v2 = new ethers.utils.Interface(poolCreatedABI_v2.inputs);
-//                         const iface_v3 = new ethers.utils.Interface(poolCreatedABI_v3.inputs);
-//                         const iface = isV2 ? iface_v2 : iface_v3;
-//                         // const poolCreatedLogData = web3.eth.abi.decodeLog(isV2 ? poolCreatedABI_v2.inputs : poolCreatedABI_v3.inputs,
-//                         //     poolCreatedLog.data,
-//                         //     poolCreatedLog.topics.slice(1));
-//                         // const poolCreatedLogData = iface.parseLog({ data: poolCreatedLog.data, topics: poolCreatedLog.topics.slice(1)});
-//                         const poolCreatedLogData = isV2 ? 
-//                             iface_v2.decodeEventLog("PairCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0))
-//                             :
-//                             iface_v3.decodeEventLog("PoolCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0));
-//                         console.log('poolCreatedLogData: ', poolCreatedLogData);
-//                         if (poolCreatedLogData && (poolCreatedLogData.pair === poolInfo.poolAddress || poolCreatedLogData.pool === poolInfo.poolAddress)) {
-//                             console.log('[Debug 2nd]', balance, poolInfo.secondaryAmount, poolInfo.poolAddress)
-//                             resolve(true)
-//                         }
-//                     }
-//                 }
-//             }
+                        const isV2 = (poolCreatedLog.topics[0] === LOG_PAIR_CREATED_V2)
+                        console.log('isV2: ', isV2);
+                        const iface_v2 = new ethers.utils.Interface(poolCreatedABI_v2.inputs);
+                        const iface_v3 = new ethers.utils.Interface(poolCreatedABI_v3.inputs);
+                        const iface = isV2 ? iface_v2 : iface_v3;
+                        // const poolCreatedLogData = web3.eth.abi.decodeLog(isV2 ? poolCreatedABI_v2.inputs : poolCreatedABI_v3.inputs,
+                        //     poolCreatedLog.data,
+                        //     poolCreatedLog.topics.slice(1));
+                        // const poolCreatedLogData = iface.parseLog({ data: poolCreatedLog.data, topics: poolCreatedLog.topics.slice(1)});
+                        const poolCreatedLogData = isV2 ? 
+                            iface_v2.decodeEventLog("PairCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0))
+                            :
+                            iface_v3.decodeEventLog("PoolCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0));
+                        console.log('poolCreatedLogData: ', poolCreatedLogData);
+                        if (poolCreatedLogData && (poolCreatedLogData.pair === poolInfo.poolAddress || poolCreatedLogData.pool === poolInfo.poolAddress)) {
+                            console.log('[Debug 2nd]', balance, poolInfo.secondaryAmount, poolInfo.poolAddress)
+                            resolve(true)
+                        }
+                    }
+                }
+            }
 
-//         } catch (err) {
-//             console.log('contract id', poolInfo)
-//             console.log(err)
-//         }
+        } catch (err) {
+            console.log('contract id', poolInfo)
+            console.log(err)
+        }
 
-//         resolve(false)
-//     })
-// }
+        resolve(false)
+    })
+}
 
-// const applyTokenSymbols = async (provider, poolInfo) => {
+const applyTokenSymbols = async (provider, poolInfo) => {
 
-//     try {
-//         // const tokenContract1 = new web3.eth.Contract(ERC20_ABI, poolInfo.primaryAddress);
-//         // const tokenContract2 = new web3.eth.Contract(ERC20_ABI, poolInfo.secondaryAddress);
-//         const tokenContract1 = new ethers.Contract(poolInfo.primaryAddress, ERC20_ABI, provider);
-//         const tokenContract2 = new ethers.Contract(poolInfo.secondaryAddress, ERC20_ABI, provider);
+    try {
+        // const tokenContract1 = new web3.eth.Contract(ERC20_ABI, poolInfo.primaryAddress);
+        // const tokenContract2 = new web3.eth.Contract(ERC20_ABI, poolInfo.secondaryAddress);
+        const tokenContract1 = new ethers.Contract(poolInfo.primaryAddress, ERC20_ABI, provider);
+        const tokenContract2 = new ethers.Contract(poolInfo.secondaryAddress, ERC20_ABI, provider);
 
 
-//         let promises = []
-//         promises.push(tokenContract1.symbol());
-//         promises.push(tokenContract2.symbol());
+        let promises = []
+        promises.push(tokenContract1.symbol());
+        promises.push(tokenContract2.symbol());
 
-//         const result = await Promise.all(promises)
+        const result = await Promise.all(promises)
 
-//         poolInfo.primarySymbol = result[0]
-//         poolInfo.secondarySymbol = result[1]
+        poolInfo.primarySymbol = result[0]
+        poolInfo.secondarySymbol = result[1]
 
-//         return true
+        return true
 
-//     } catch (err) {
-//         console.log(err)
-//     }
+    } catch (err) {
+        console.log(err)
+    }
 
-//     poolInfo.primarySymbol = '*'
-//     poolInfo.secondarySymbol = '*'
+    poolInfo.primarySymbol = '*'
+    poolInfo.secondarySymbol = '*'
 
-//     return false
-// }
+    return false
+}
 
 const parseLog = async (provider, log, callback) => {
 
@@ -317,35 +317,35 @@ const parseLog = async (provider, log, callback) => {
                 const tokenB_amount = logData.amount1.toString()
 
                 let poolInfo = {};
-                // if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
+                if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
 
-                //     poolInfo.routerAddress = uniswapV2RouterAddress
-                //     poolInfo.version = 'v2'
-                //     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
-                //         console.log('result: ', result);
-                //         if (result) {
-                //             await applyTokenSymbols(provider, poolInfo)
-                //             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
+                    poolInfo.routerAddress = uniswapV2RouterAddress
+                    poolInfo.version = 'v2'
+                    checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
+                        console.log('result: ', result);
+                        if (result) {
+                            await applyTokenSymbols(provider, poolInfo)
+                            let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
 
-                //             console.log("------------");
-                //             console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
-                //             console.log(`${scanUrl}/tx/${log.transactionHash}`);
-                //             console.log("------------");
-                //             console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
+                            console.log("------------");
+                            console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
+                            console.log(`${scanUrl}/tx/${log.transactionHash}`);
+                            console.log("------------");
+                            console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
 
-                //             if (callback) {
-                //                 callback(poolInfo, 'v2')
-                //             }
+                            if (callback) {
+                                callback(poolInfo, 'v2')
+                            }
 
-                //             if (g_lpInfo.length >= 10) {
-                //                 g_lpInfo = g_lpInfo.slice(1);
-                //                 g_lpInfo.push(poolInfo);
-                //             } else {
-                //                 g_lpInfo.push(poolInfo);
-                //             }
-                //         }
-                //     })
-                // }
+                            if (g_lpInfo.length >= 10) {
+                                g_lpInfo = g_lpInfo.slice(1);
+                                g_lpInfo.push(poolInfo);
+                            } else {
+                                g_lpInfo.push(poolInfo);
+                            }
+                        }
+                    })
+                }
             }
         
             break;
