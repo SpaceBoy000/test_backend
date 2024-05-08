@@ -2,7 +2,7 @@ const express = require("express");
 const routes = require("./routes");
 const fs = require('fs');
 
-// const { g_lpInfo, main } = require('./server');
+const { main } = require('./server');
 
 const app = express();
 app.use(express.json());
