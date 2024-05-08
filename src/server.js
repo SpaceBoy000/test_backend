@@ -297,63 +297,63 @@ const parseLog = async (provider, log, callback) => {
         return
     }
 
-    // switch (logCode) {
+    switch (logCode) {
 
-    //     case LOG_MINT_V2_KECCACK: 
-    //         const a = utils.addressToHex(uniswapV2RouterAddress);
-    //         if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
-    //             // const iface_v2 = new ethers.utils.Interface(mintABI_v2);
-    //             // // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
-    //             // const logData = iface_v2.decodeEventLog("Mint", log.data, log.topics.slice(0));
-    //             // const pairAddress = log.address
+        case LOG_MINT_V2_KECCACK: 
+            const a = utils.addressToHex(uniswapV2RouterAddress);
+            if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
+                const iface_v2 = new ethers.utils.Interface(mintABI_v2);
+                // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
+                const logData = iface_v2.decodeEventLog("Mint", log.data, log.topics.slice(0));
+                const pairAddress = log.address
 
-    //             // const tokenResult = await getTokensByUniv2PoolAddress(provider, pairAddress)
-    //             // if (!tokenResult) {
-    //             //     return
-    //             // }
+                const tokenResult = await getTokensByUniv2PoolAddress(provider, pairAddress)
+                if (!tokenResult) {
+                    return
+                }
 
-    //             // const { tokenA, tokenB } = tokenResult
-    //             // const tokenA_amount = logData.amount0.toString()
-    //             // const tokenB_amount = logData.amount1.toString()
+                const { tokenA, tokenB } = tokenResult
+                const tokenA_amount = logData.amount0.toString()
+                const tokenB_amount = logData.amount1.toString()
 
-    //             let poolInfo = {};
-    //             // if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
+                let poolInfo = {};
+                // if (validatePool(pairAddress, tokenA, tokenA_amount, tokenB, tokenB_amount, poolInfo) === true) {
 
-    //             //     poolInfo.routerAddress = uniswapV2RouterAddress
-    //             //     poolInfo.version = 'v2'
-    //             //     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
-    //             //         console.log('result: ', result);
-    //             //         if (result) {
-    //             //             await applyTokenSymbols(provider, poolInfo)
-    //             //             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
+                //     poolInfo.routerAddress = uniswapV2RouterAddress
+                //     poolInfo.version = 'v2'
+                //     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
+                //         console.log('result: ', result);
+                //         if (result) {
+                //             await applyTokenSymbols(provider, poolInfo)
+                //             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
 
-    //             //             console.log("------------");
-    //             //             console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
-    //             //             console.log(`${scanUrl}/tx/${log.transactionHash}`);
-    //             //             console.log("------------");
-    //             //             console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
+                //             console.log("------------");
+                //             console.log('\x1b[32m%s\x1b[0m', `[v2] Detected first mint [${str}] Token: ${poolInfo.primaryAddress} Pair: ${poolInfo.poolAddress}`);
+                //             console.log(`${scanUrl}/tx/${log.transactionHash}`);
+                //             console.log("------------");
+                //             console.log("TokenAmount: ", tokenA_amount, " : ", tokenB_amount);
 
-    //             //             if (callback) {
-    //             //                 callback(poolInfo, 'v2')
-    //             //             }
+                //             if (callback) {
+                //                 callback(poolInfo, 'v2')
+                //             }
 
-    //             //             if (g_lpInfo.length >= 10) {
-    //             //                 g_lpInfo = g_lpInfo.slice(1);
-    //             //                 g_lpInfo.push(poolInfo);
-    //             //             } else {
-    //             //                 g_lpInfo.push(poolInfo);
-    //             //             }
-    //             //         }
-    //             //     })
-    //             // }
-    //         }
+                //             if (g_lpInfo.length >= 10) {
+                //                 g_lpInfo = g_lpInfo.slice(1);
+                //                 g_lpInfo.push(poolInfo);
+                //             } else {
+                //                 g_lpInfo.push(poolInfo);
+                //             }
+                //         }
+                //     })
+                // }
+            }
         
-    //         break;
+            break;
 
-    //     case LOG_MINT_V3_KECCACK: 
+        case LOG_MINT_V3_KECCACK: 
 
-    //         break;
-    // }
+            break;
+    }
 }
 
 // const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
