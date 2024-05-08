@@ -358,76 +358,76 @@ const poolCreatedABI_v3 = {
 //     }
 // }
 
-// const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
+const PairCreationMonitoring = async (blockNumber, toBlockNumber) => {
 
-//     try {
-//         provider.getLogs({
-//             fromBlock: 35807779,
-//             toBlock: 35807780,
-//             // address: uniswapV2RouterAddress,
-//             topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
-//         }, function (error, events) {
-//             console.log("Fail: ", events);
-//         }).then(async function (events) {
-//             console.log("Success: ", events);
+    try {
+        provider.getLogs({
+            fromBlock: 35807779,
+            toBlock: 35807780,
+            // address: uniswapV2RouterAddress,
+            topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
+        }, function (error, events) {
+            console.log("Fail: ", events);
+        }).then(async function (events) {
+            console.log("Success: ", events);
 
-//             if (events.length > 0) {
-//                 await parseLog(provider, events[0]);
-//             }
+            if (events.length > 0) {
+                await parseLog(provider, events[0]);
+            }
 
 
-//         }).catch((err) => {
-//             console.error('Error: ', err);
-//         });
+        }).catch((err) => {
+            console.error('Error: ', err);
+        });
 
-//         // Promise.all(transferPromises)
-//         //     .then(async (transferEventslist) => {
-//         //         for (let idx1 = 0; idx1 < transferEventslist.length; idx1++) {
-//         //             const EventlistOfMultipleTokens = transferEventslist[idx1];
-//         //             if (EventlistOfMultipleTokens.length > 0) {
-//         //                 let i;
-//         //                 for (i = 0; i < EventlistOfMultipleTokens.length; i++) {
-//         //                     let data = EventlistOfMultipleTokens[i];
-//         //                     let objTemp = data.returnValues;
-//         //                     // console.log("data.returnValues  ===> ", data.returnValues);
-//         //                     objTemp.transactionHash = data.transactionHash;
-//         //                     if (compareObjects(TransferTemp, objTemp) === false) {
-//         //                         TransferTemp = objTemp;
+        // Promise.all(transferPromises)
+        //     .then(async (transferEventslist) => {
+        //         for (let idx1 = 0; idx1 < transferEventslist.length; idx1++) {
+        //             const EventlistOfMultipleTokens = transferEventslist[idx1];
+        //             if (EventlistOfMultipleTokens.length > 0) {
+        //                 let i;
+        //                 for (i = 0; i < EventlistOfMultipleTokens.length; i++) {
+        //                     let data = EventlistOfMultipleTokens[i];
+        //                     let objTemp = data.returnValues;
+        //                     // console.log("data.returnValues  ===> ", data.returnValues);
+        //                     objTemp.transactionHash = data.transactionHash;
+        //                     if (compareObjects(TransferTemp, objTemp) === false) {
+        //                         TransferTemp = objTemp;
 
-//         //                         const from = TransferTemp.from;
-//         //                         const to = TransferTemp.to;
-//         //                         const value = TransferTemp.value;
-//         //                         const txHash = TransferTemp.transactionHash;
-//         //                         const tokenDecimals = docs[idx1].alttokendecimals;
-//         //                         if (to.toString().toLowerCase() === docs[idx1].pooladdress.toString().toLowerCase()) {
-//         //                             const ethunitname = Object.keys(ETHER_UNITS).find(key => Math.pow(10, tokenDecimals).toString() == ETHER_UNITS[key]);
-//         //                             let tokenReal = web3WS.utils.fromWei(value.toString(), ethunitname.toString());
+        //                         const from = TransferTemp.from;
+        //                         const to = TransferTemp.to;
+        //                         const value = TransferTemp.value;
+        //                         const txHash = TransferTemp.transactionHash;
+        //                         const tokenDecimals = docs[idx1].alttokendecimals;
+        //                         if (to.toString().toLowerCase() === docs[idx1].pooladdress.toString().toLowerCase()) {
+        //                             const ethunitname = Object.keys(ETHER_UNITS).find(key => Math.pow(10, tokenDecimals).toString() == ETHER_UNITS[key]);
+        //                             let tokenReal = web3WS.utils.fromWei(value.toString(), ethunitname.toString());
 
-//         //                             await web3WS.eth.getTransaction(txHash)
-//         //                                 .then(responsOfHash => {
+        //                             await web3WS.eth.getTransaction(txHash)
+        //                                 .then(responsOfHash => {
 
-//         //                                     console.log("tx caller ==> ", responsOfHash.from);
-//         //                                     console.log("send amount ==> ", tokenReal);
+        //                                     console.log("tx caller ==> ", responsOfHash.from);
+        //                                     console.log("send amount ==> ", tokenReal);
 
-//         //                                 }).catch(error => {
-//         //                                     console.log("bsc recordBuyEvent  : ", error.message);
-//         //                                 });
-//         //                         }
-//         //                     }
-//         //                 }
-//         //             } else {
-//         //                 return;
-//         //             }
-//         //         }
-//         //     })
-//         //     .catch((error) => {
-//         //         console.log(error);
-//         //     })
+        //                                 }).catch(error => {
+        //                                     console.log("bsc recordBuyEvent  : ", error.message);
+        //                                 });
+        //                         }
+        //                     }
+        //                 }
+        //             } else {
+        //                 return;
+        //             }
+        //         }
+        //     })
+        //     .catch((error) => {
+        //         console.log(error);
+        //     })
 
-//     } catch (error) {
-//         console.log("Something went wrong 2: " + error.message)
-//     }
-// }
+    } catch (error) {
+        console.log("Something went wrong 2: " + error.message)
+    }
+}
 
 var scanBlockNumber = 0;
 var maxBlockNumber = 0;
