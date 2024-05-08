@@ -469,5 +469,5 @@ async function main() {
 
 module.exports = {
     main,
-    // g_lpInfo
+    g_lpInfo
 }
