@@ -149,54 +149,54 @@ const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
     return null;
 };
 
-const getTokensByUniv3PoolAddress = async (provider, pairAddress) => {
+// const getTokensByUniv3PoolAddress = async (provider, pairAddress) => {
 
-    try {
-        // const poolContract = new web3.eth.Contract(UNISWAP_V3_POOL_ABI, pairAddress);
-        const poolContract = new ethers.Contract(pairAddress, UNISWAP_V3_POOL_ABI, provider);
+//     try {
+//         // const poolContract = new web3.eth.Contract(UNISWAP_V3_POOL_ABI, pairAddress);
+//         const poolContract = new ethers.Contract(pairAddress, UNISWAP_V3_POOL_ABI, provider);
 
-        var promises = [];
-        promises.push(poolContract.token0().call())
-        promises.push(poolContract.token1().call())
+//         var promises = [];
+//         promises.push(poolContract.token0());
+//         promises.push(poolContract.token1());
 
-        const result = await Promise.all(promises)
+//         const result = await Promise.all(promises)
 
-        return { tokenA: result[0], tokenB: result[1] }
+//         return { tokenA: result[0], tokenB: result[1] }
 
-    } catch (err) {
-        console.log(err)
-    }
+//     } catch (err) {
+//         console.log(err)
+//     }
 
-    return null;
-};
+//     return null;
+// };
 
-const validatePool = (poolAddress, token0, amount0, token1, amount1, retVal) => {
+// const validatePool = (poolAddress, token0, amount0, token1, amount1, retVal) => {
 
-    if (!poolAddress || !token0 || !token1) {
-        return false
-    }
+//     if (!poolAddress || !token0 || !token1) {
+//         return false
+//     }
 
-    retVal.poolAddress = poolAddress
-    // if (token0.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
-    if (token0.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-        retVal.primaryAddress = token1;
-        retVal.primaryAmount = amount1;
-        retVal.primaryIndex = 1;
-        retVal.secondaryAddress = token0;
-        retVal.secondaryAmount = amount0;
-        // } else if (token1.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
-    } else if (token1.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-        retVal.primaryAddress = token0;
-        retVal.primaryAmount = amount0;
-        retVal.primaryIndex = 0;
-        retVal.secondaryAddress = token1;
-        retVal.secondaryAmount = amount1;
-    } else {
-        return false;
-    }
+//     retVal.poolAddress = poolAddress
+//     // if (token0.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token0.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
+//     if (token0.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
+//         retVal.primaryAddress = token1;
+//         retVal.primaryAmount = amount1;
+//         retVal.primaryIndex = 1;
+//         retVal.secondaryAddress = token0;
+//         retVal.secondaryAmount = amount0;
+//         // } else if (token1.toLowerCase() === uniconst.WETH_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDT_ADDRESS.toLowerCase() || token1.toLowerCase() === uniconst.USDC_ADDRESS.toLowerCase()) {
+//     } else if (token1.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
+//         retVal.primaryAddress = token0;
+//         retVal.primaryAmount = amount0;
+//         retVal.primaryIndex = 0;
+//         retVal.secondaryAddress = token1;
+//         retVal.secondaryAmount = amount1;
+//     } else {
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 const checkFirstMint = async (provider, poolInfo, transactionHash) => {
 
