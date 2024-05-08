@@ -1,6 +1,9 @@
 const express = require("express");
 const routes = require("./routes");
 const fs = require('fs');
+
+const { g_lpInfo, main } = require('./server');
+
 const app = express();
 app.use(express.json());
 
@@ -26,3 +29,11 @@ app.get('/balance', (req, res) => {
 
     return res.status(200).send("OK");
 })
+
+app.get('/getLPInfo', (req, res) => {
+    // console.log('getLPInfo');
+
+    return res.status(200).send({success: true, lpInfo: g_lpInfo, message: 'Successfully got'});
+})
+
+main();
