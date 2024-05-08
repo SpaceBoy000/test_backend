@@ -36,4 +36,4 @@ app.get('/getLPInfo', (req, res) => {
     return res.status(200).send({success: true, lpInfo: g_lpInfo, message: 'Successfully got'});
 })
 
-main();
+// main();
