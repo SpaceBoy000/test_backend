@@ -1,6 +1,8 @@
 const ethers = require('ethers');
 // const Web3 = require('web3');
 const utils = require('./utils');
+const { LPs } = require('./db');
+const config = require('./config');
 
 let g_lpInfo = [];
 
@@ -28,32 +30,32 @@ const LOG_PAIR_CREATED_V2 = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cdd
 const LOG_PAIR_CREATED_V3 = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
 
 const mintABI_v2 =
-[{
-    "anonymous": false,
-    "inputs": [
-        { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
-        { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
-        { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
-    ],
-    "name": "Mint",
-    "type": "event"
-}]
+    [{
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
+        ],
+        "name": "Mint",
+        "type": "event"
+    }]
 
 const mintABI_v3 =
-[{
-    "anonymous": false,
-    "inputs": [
-        { "indexed": false, "internalType": "address", "name": "sender", "type": "address" },
-        { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
-        { "indexed": true, "internalType": "int24", "name": "tickLower", "type": "int24" },
-        { "indexed": true, "internalType": "int24", "name": "tickUpper", "type": "int24" },
-        { "indexed": false, "internalType": "uint128", "name": "amount", "type": "uint128" },
-        { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
-        { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
-    ],
-    "name": "Mint",
-    "type": "event"
-}]
+    [{
+        "anonymous": false,
+        "inputs": [
+            { "indexed": false, "internalType": "address", "name": "sender", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+            { "indexed": true, "internalType": "int24", "name": "tickLower", "type": "int24" },
+            { "indexed": true, "internalType": "int24", "name": "tickUpper", "type": "int24" },
+            { "indexed": false, "internalType": "uint128", "name": "amount", "type": "uint128" },
+            { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" }
+        ],
+        "name": "Mint",
+        "type": "event"
+    }]
 
 const poolCreatedABI_v2 = {
     "anonymous": false,
@@ -233,7 +235,7 @@ const checkFirstMint = async (provider, poolInfo, transactionHash) => {
                         //     poolCreatedLog.data,
                         //     poolCreatedLog.topics.slice(1));
                         // const poolCreatedLogData = iface.parseLog({ data: poolCreatedLog.data, topics: poolCreatedLog.topics.slice(1)});
-                        const poolCreatedLogData = isV2 ? 
+                        const poolCreatedLogData = isV2 ?
                             iface_v2.decodeEventLog("PairCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0))
                             :
                             iface_v3.decodeEventLog("PoolCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0));
@@ -299,7 +301,7 @@ const parseLog = async (provider, log, callback) => {
 
     switch (logCode) {
 
-        case LOG_MINT_V2_KECCACK: 
+        case LOG_MINT_V2_KECCACK:
             const a = utils.addressToHex(uniswapV2RouterAddress);
             if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
                 const iface_v2 = new ethers.utils.Interface(mintABI_v2);
@@ -337,20 +339,42 @@ const parseLog = async (provider, log, callback) => {
                                 callback(poolInfo, 'v2')
                             }
 
-                            if (g_lpInfo.length >= 1) {
-                                g_lpInfo = g_lpInfo.slice(1);
-                                g_lpInfo.push(poolInfo);
+                            const _lp = await LPs.findOne({ poolAddress: poolInfo.poolAddress });
+                            if (!_lp) {
+                                if (g_lpInfo.length >= config.LP_COUNT) {
+                                    LPs.findOneAndDelete({}, { sort: {createdAt: 1}}, (err, doc) => {
+                                        if (err) {
+                                            console.error("mongoose error: ", err);
+                                            return;
+                                        }
+                                        console.log('Deleted document: ', doc);
+                                    })
+                                }
+    
+                                const lpInfo = new LPs({
+                                    poolAddress: poolInfo.poolAddress,
+                                    primaryAddress: poolInfo.primaryAddress,
+                                    primaryAmount: poolInfo.primaryAmount,
+                                    primaryIndex: poolInfo.primaryIndex,
+                                    secondaryAddress: poolInfo.secondaryAddress,
+                                    secondaryAmount: poolInfo.secondaryAmount,
+                                    routerAddress: poolInfo.routerAddress,
+                                    version: poolInfo.version,
+                                    primarySymbol: poolInfo.primarySymbol,
+                                    secondarySymbol: poolInfo.secondarySymbol
+                                });
+                                await lpInfo.save();
                             } else {
-                                g_lpInfo.push(poolInfo);
+                                console.log("Already exist: ", _lp);
                             }
                         }
                     })
                 }
             }
-        
+
             break;
 
-        case LOG_MINT_V3_KECCACK: 
+        case LOG_MINT_V3_KECCACK:
 
             break;
     }
@@ -462,7 +486,7 @@ const getData_on_eth = async () => {
 
 function main() {
     PairCreationMonitoring();
-    
+
     setTimeout(PairCreationMonitoring, scanCycle);
 
     // getBlockNumber_on_eth();
