@@ -37,8 +37,8 @@ app.get('/getLPInfo', (req, res) => {
             console.error("Mongoose get error: ", err);
             return res.status(400).send({success: false, lpInfo: [], message: 'Internal server error'});
         } else {
-
-            return res.status(200).send({success: false, lpInfo: docs, message: 'Successfully got'});
+            
+            return res.status(200).send({success: true, lpInfo: docs, message: 'Successfully got'});
         }
     });
 })
