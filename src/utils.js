@@ -3,6 +3,11 @@ const addressToHex = (address) => {
     return hexString.toLowerCase();
 }
 
+const convertAmountDecimals = (amount, decimals) => {
+    return amount * Math.pow(10, 18 - decimals);
+}
+
 module.exports = {
-    addressToHex
+    addressToHex,
+    convertAmountDecimals
 }

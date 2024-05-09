@@ -131,12 +131,11 @@ const poolCreatedABI_v3 = [{
 const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
 
     try {
-        // const poolContract = new web3.eth.Contract(UNISWAP_V2_POOL_ABI, pairAddress);
+        
         const poolContract = new ethers.Contract(pairAddress, UNISWAP_V2_POOL_ABI, provider);
 
         var promises = [];
-        // promises.push(poolContract.methods.token0().call())
-        // promises.push(poolContract.methods.token1().call())
+        
         promises.push(poolContract.token0())
         promises.push(poolContract.token1())
 
@@ -262,7 +261,7 @@ const checkFirstMint = async (provider, poolInfo, transactionHash) => {
     
 }
 
-const applyTokenSymbols = async (provider, poolInfo) => {
+const applyTokenSymbolAndDecimals = async (provider, poolInfo) => {
 
     try {
         // const tokenContract1 = new web3.eth.Contract(ERC20_ABI, poolInfo.primaryAddress);
@@ -274,12 +273,17 @@ const applyTokenSymbols = async (provider, poolInfo) => {
         let promises = []
         promises.push(tokenContract1.symbol());
         promises.push(tokenContract2.symbol());
+        promises.push(tokenContract1.decimals());
+        promises.push(tokenContract2.decimals());
 
         const result = await Promise.all(promises)
 
         poolInfo.primarySymbol = result[0]
         poolInfo.secondarySymbol = result[1]
+        poolInfo.primaryDecimals = result[2]
+        poolInfo.secondaryDecimals = result[3]
 
+        console.log('poolInfo: ', result);
         return true
 
     } catch (err) {
@@ -335,7 +339,7 @@ const parseLog = async (provider, log, callback) => {
                     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
                         console.log('checkFirstMint: ', result);
                         if (result) {
-                            await applyTokenSymbols(provider, poolInfo)
+                            await applyTokenSymbolAndDecimals(provider, poolInfo)
                             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
 
                             console.log("------------");
@@ -366,14 +370,16 @@ const parseLog = async (provider, log, callback) => {
                                     const lpInfo = new LPs({
                                         poolAddress: poolInfo.poolAddress,
                                         primaryAddress: poolInfo.primaryAddress,
-                                        primaryAmount: poolInfo.primaryAmount,
+                                        primaryAmount: utils.convertAmountDecimals(poolInfo.primaryAmount, poolInfo.primaryDecimals),
                                         primaryIndex: poolInfo.primaryIndex,
                                         secondaryAddress: poolInfo.secondaryAddress,
-                                        secondaryAmount: poolInfo.secondaryAmount,
+                                        secondaryAmount: utils.convertAmountDecimals(poolInfo.secondaryAmount, poolInfo.secondaryDecimals),
                                         routerAddress: poolInfo.routerAddress,
                                         version: poolInfo.version,
                                         primarySymbol: poolInfo.primarySymbol,
-                                        secondarySymbol: poolInfo.secondarySymbol
+                                        secondarySymbol: poolInfo.secondarySymbol,
+                                        primaryDecimals: poolInfo.primaryDecimals,
+                                        secondaryDecimals: poolInfo.secondaryDecimals,
                                     });
                                     await lpInfo.save();
                                 } else {
@@ -402,6 +408,7 @@ const parseLog = async (provider, log, callback) => {
 
 }
 
+
 const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
 
     try {
@@ -409,8 +416,9 @@ const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
             fromBlock: blockNumber, //38565651, // blockNumber, //35807779,
             toBlock: toBlockNumber, //38565652, //toBlockNumber, // 35807780,
             topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
-        }, function (error, events) {
+        }, async function (error, events) {
             // console.log("Fail: ", events);
+            
         }).then(async function (events) {
             // console.log("Success: ", events);
 
@@ -422,52 +430,40 @@ const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
             console.error('Error: ', err);
         });
 
-        // Promise.all(transferPromises)
-        //     .then(async (transferEventslist) => {
-        //         for (let idx1 = 0; idx1 < transferEventslist.length; idx1++) {
-        //             const EventlistOfMultipleTokens = transferEventslist[idx1];
-        //             if (EventlistOfMultipleTokens.length > 0) {
-        //                 let i;
-        //                 for (i = 0; i < EventlistOfMultipleTokens.length; i++) {
-        //                     let data = EventlistOfMultipleTokens[i];
-        //                     let objTemp = data.returnValues;
-        //                     // console.log("data.returnValues  ===> ", data.returnValues);
-        //                     objTemp.transactionHash = data.transactionHash;
-        //                     if (compareObjects(TransferTemp, objTemp) === false) {
-        //                         TransferTemp = objTemp;
-
-        //                         const from = TransferTemp.from;
-        //                         const to = TransferTemp.to;
-        //                         const value = TransferTemp.value;
-        //                         const txHash = TransferTemp.transactionHash;
-        //                         const tokenDecimals = docs[idx1].alttokendecimals;
-        //                         if (to.toString().toLowerCase() === docs[idx1].pooladdress.toString().toLowerCase()) {
-        //                             const ethunitname = Object.keys(ETHER_UNITS).find(key => Math.pow(10, tokenDecimals).toString() == ETHER_UNITS[key]);
-        //                             let tokenReal = web3WS.utils.fromWei(value.toString(), ethunitname.toString());
-
-        //                             await web3WS.eth.getTransaction(txHash)
-        //                                 .then(responsOfHash => {
-
-        //                                     console.log("tx caller ==> ", responsOfHash.from);
-        //                                     console.log("send amount ==> ", tokenReal);
-
-        //                                 }).catch(error => {
-        //                                     console.log("bsc recordBuyEvent  : ", error.message);
-        //                                 });
-        //                         }
-        //                     }
-        //                 }
-        //             } else {
-        //                 return;
-        //             }
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //     })
-
     } catch (error) {
         console.log("Something went wrong 2: " + error.message)
+    }
+
+    await updateDatabase();
+}
+
+const getTokenAmount = async (provider, tokenAddress, targetAddress) => {
+
+    try {
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+
+        return await tokenContract.balanceOf(targetAddress);
+    } catch (err) {
+        console.log(err)
+    }
+
+    return 0;
+}
+
+const updateDatabase = async () => {
+    try {
+        const allLps = await LPs.find({});
+        await Promise.all(
+            allLps.map( async(item) => {
+                const newPrimaryAmount =  await getTokenAmount(provider, item.primaryAddress, item.poolAddress);
+                const newSecondaryAmount =  await getTokenAmount(provider, item.secondaryAddress, item.poolAddress);
+                item.primaryAmount = utils.convertAmountDecimals(newPrimaryAmount, item.primaryDecimals);
+                item.secondaryAmount = utils.convertAmountDecimals(newSecondaryAmount, item.secondaryDecimals);
+                await item.save();
+            })
+        );
+    } catch (err) {
+        console.error('UpdateDatabase Error: ', err);
     }
 }
 

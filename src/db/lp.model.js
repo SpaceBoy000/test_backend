@@ -44,6 +44,14 @@ module.exports = (mongoose) => {
                 type: String,
                 default: ''
             },
+            primaryDecimals: {
+                type: Number,
+                default: 18
+            },
+            secondaryDecimals: {
+                type: Number,
+                default: 18
+            },
         },
         { timestamps: true }
     )
