@@ -57,7 +57,7 @@ const mintABI_v3 =
         "type": "event"
     }]
 
-const poolCreatedABI_v2 = {
+const poolCreatedABI_v2 = [{
     "anonymous": false,
     "inputs": [
         {
@@ -87,9 +87,9 @@ const poolCreatedABI_v2 = {
     ],
     "name": "PairCreated",
     "type": "event"
-}
+}]
 
-const poolCreatedABI_v3 = {
+const poolCreatedABI_v3 = [{
 
     "anonymous": false,
     "inputs": [
@@ -126,7 +126,7 @@ const poolCreatedABI_v3 = {
     ],
     "name": "PoolCreated",
     "type": "event"
-}
+}]
 
 const getTokensByUniv2PoolAddress = async (provider, pairAddress) => {
 
@@ -201,35 +201,39 @@ const validatePool = (poolAddress, token0, amount0, token1, amount1, retVal) => 
 }
 
 const checkFirstMint = async (provider, poolInfo, transactionHash) => {
-
-    return (async (resolve, reject) => {
-
+    console.log('transactionHash: ', transactionHash);
+    
+    return new Promise (async (resolve, reject) => {
+        
         try {
             // const tokenContract = new web3.eth.Contract(ERC20_ABI, poolInfo.secondaryAddress);
             const tokenContract = new ethers.Contract(poolInfo.secondaryAddress, ERC20_ABI, provider);
             const balance = await tokenContract.balanceOf(poolInfo.poolAddress);
 
             if (Number(balance) === Number(poolInfo.secondaryAmount)) {
+                
                 resolve(true)
             } else {
 
                 let txReceipt = null;
                 try {
                     // txReceipt = await web3.eth.getTransactionReceipt(transactionHash);
-                    const txReceipt = await provider.getTransactionReceipt(transactionHash);
-
+                    txReceipt = await provider.getTransactionReceipt(transactionHash);
+                    
                 } catch (error) {
+                    
                     resolve(false);
                 }
 
                 if (txReceipt) {
+                    
                     const poolCreatedLog = txReceipt.logs.find((item) => (item.topics[0] === LOG_PAIR_CREATED_V2 || item.topics[0] === LOG_PAIR_CREATED_V3));
                     if (poolCreatedLog && poolCreatedLog.topics && poolCreatedLog.topics.length > 0) {
-
+                        
                         const isV2 = (poolCreatedLog.topics[0] === LOG_PAIR_CREATED_V2)
-                        console.log('isV2: ', isV2);
-                        const iface_v2 = new ethers.utils.Interface(poolCreatedABI_v2.inputs);
-                        const iface_v3 = new ethers.utils.Interface(poolCreatedABI_v3.inputs);
+                        
+                        const iface_v2 = new ethers.utils.Interface(poolCreatedABI_v2);
+                        const iface_v3 = new ethers.utils.Interface(poolCreatedABI_v3);
                         const iface = isV2 ? iface_v2 : iface_v3;
                         // const poolCreatedLogData = web3.eth.abi.decodeLog(isV2 ? poolCreatedABI_v2.inputs : poolCreatedABI_v3.inputs,
                         //     poolCreatedLog.data,
@@ -239,7 +243,7 @@ const checkFirstMint = async (provider, poolInfo, transactionHash) => {
                             iface_v2.decodeEventLog("PairCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0))
                             :
                             iface_v3.decodeEventLog("PoolCreated", poolCreatedLog.data, poolCreatedLog.topics.slice(0));
-                        console.log('poolCreatedLogData: ', poolCreatedLogData);
+                        
                         if (poolCreatedLogData && (poolCreatedLogData.pair === poolInfo.poolAddress || poolCreatedLogData.pool === poolInfo.poolAddress)) {
                             console.log('[Debug 2nd]', balance, poolInfo.secondaryAmount, poolInfo.poolAddress)
                             resolve(true)
@@ -252,9 +256,10 @@ const checkFirstMint = async (provider, poolInfo, transactionHash) => {
             console.log('contract id', poolInfo)
             console.log(err)
         }
-
+        
         resolve(false)
     })
+    
 }
 
 const applyTokenSymbols = async (provider, poolInfo) => {
@@ -290,8 +295,8 @@ const applyTokenSymbols = async (provider, poolInfo) => {
 const parseLog = async (provider, log, callback) => {
 
     console.log("===================parseLog=====================")
-    console.log("log.topics[0]", log)
-    console.log("log.topics[1]", log.topics[1])
+    // console.log("log.topics[0]", log)
+    // console.log("log.topics[1]", log.topics[1])
     const logCode = log.topics[0]
 
     const toAddress = log.topics[1].toLowerCase()
@@ -299,21 +304,25 @@ const parseLog = async (provider, log, callback) => {
         return
     }
 
+
+    console.log('logCode: ', logCode);
     switch (logCode) {
 
         case LOG_MINT_V2_KECCACK:
-            const a = utils.addressToHex(uniswapV2RouterAddress);
+            
             if (toAddress === utils.addressToHex(uniswapV2RouterAddress)) {
                 const iface_v2 = new ethers.utils.Interface(mintABI_v2);
                 // const logData = web3.eth.abi.decodeLog(mintABI_v2.inputs, log.data, log.topics.slice(1));
                 const logData = iface_v2.decodeEventLog("Mint", log.data, log.topics.slice(0));
                 const pairAddress = log.address
 
+                // console.log('logData: ', logData);
+
                 const tokenResult = await getTokensByUniv2PoolAddress(provider, pairAddress)
                 if (!tokenResult) {
                     return
                 }
-
+                
                 const { tokenA, tokenB } = tokenResult
                 const tokenA_amount = logData.amount0.toString()
                 const tokenB_amount = logData.amount1.toString()
@@ -324,7 +333,7 @@ const parseLog = async (provider, log, callback) => {
                     poolInfo.routerAddress = uniswapV2RouterAddress
                     poolInfo.version = 'v2'
                     checkFirstMint(provider, poolInfo, log.transactionHash).then(async result => {
-                        console.log('result: ', result);
+                        console.log('checkFirstMint: ', result);
                         if (result) {
                             await applyTokenSymbols(provider, poolInfo)
                             let str = `${poolInfo.primarySymbol}/${poolInfo.secondarySymbol}`
@@ -339,33 +348,45 @@ const parseLog = async (provider, log, callback) => {
                                 callback(poolInfo, 'v2')
                             }
 
-                            const _lp = await LPs.findOne({ poolAddress: poolInfo.poolAddress });
-                            if (!_lp) {
-                                if (g_lpInfo.length >= config.LP_COUNT) {
-                                    LPs.findOneAndDelete({}, { sort: {createdAt: 1}}, (err, doc) => {
-                                        if (err) {
-                                            console.error("mongoose error: ", err);
-                                            return;
-                                        }
-                                        console.log('Deleted document: ', doc);
-                                    })
+                            if (true) { // Vercel Database(Product)
+                                const _lp = await LPs.findOne({ poolAddress: poolInfo.poolAddress });
+                                if (!_lp) {
+                                    const totalCount = await LPs.countDocuments({});
+                                    console.log("totalCount: ", totalCount);
+                                    if (totalCount >= config.LP_COUNT) {
+                                        LPs.findOneAndDelete({}, { sort: { createdAt: 1 } }, (err, doc) => {
+                                            if (err) {
+                                                console.error("mongoose error: ", err);
+                                                return;
+                                            }
+                                            console.log('Deleted document: ', doc);
+                                        })
+                                    }
+
+                                    const lpInfo = new LPs({
+                                        poolAddress: poolInfo.poolAddress,
+                                        primaryAddress: poolInfo.primaryAddress,
+                                        primaryAmount: poolInfo.primaryAmount,
+                                        primaryIndex: poolInfo.primaryIndex,
+                                        secondaryAddress: poolInfo.secondaryAddress,
+                                        secondaryAmount: poolInfo.secondaryAmount,
+                                        routerAddress: poolInfo.routerAddress,
+                                        version: poolInfo.version,
+                                        primarySymbol: poolInfo.primarySymbol,
+                                        secondarySymbol: poolInfo.secondarySymbol
+                                    });
+                                    await lpInfo.save();
+                                } else {
+                                    console.log("Already exist: ", _lp);
                                 }
-    
-                                const lpInfo = new LPs({
-                                    poolAddress: poolInfo.poolAddress,
-                                    primaryAddress: poolInfo.primaryAddress,
-                                    primaryAmount: poolInfo.primaryAmount,
-                                    primaryIndex: poolInfo.primaryIndex,
-                                    secondaryAddress: poolInfo.secondaryAddress,
-                                    secondaryAmount: poolInfo.secondaryAmount,
-                                    routerAddress: poolInfo.routerAddress,
-                                    version: poolInfo.version,
-                                    primarySymbol: poolInfo.primarySymbol,
-                                    secondarySymbol: poolInfo.secondarySymbol
-                                });
-                                await lpInfo.save();
-                            } else {
-                                console.log("Already exist: ", _lp);
+                            } else { // Global variable(Test)
+                                if (g_lpInfo.length > config.LP_COUNT) {
+                                    g_lpInfo.slice(1);
+                                }
+
+                                g_lpInfo.push(poolInfo);
+
+                                console.log("g_lpInfo: ", g_lpInfo);
                             }
                         }
                     })
@@ -375,28 +396,27 @@ const parseLog = async (provider, log, callback) => {
             break;
 
         case LOG_MINT_V3_KECCACK:
-
+            
             break;
     }
+
 }
 
 const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
 
     try {
         provider.getLogs({
-            fromBlock: 35807779,
-            toBlock: 35807780,
-            // address: uniswapV2RouterAddress,
+            fromBlock: blockNumber, //38565651, // blockNumber, //35807779,
+            toBlock: toBlockNumber, //38565652, //toBlockNumber, // 35807780,
             topics: [[LOG_MINT_V2_KECCACK, LOG_MINT_V3_KECCACK], null]
         }, function (error, events) {
-            console.log("Fail: ", events);
+            // console.log("Fail: ", events);
         }).then(async function (events) {
-            console.log("Success: ", events);
+            // console.log("Success: ", events);
 
             if (events.length > 0) {
                 await parseLog(provider, events[0]);
             }
-
 
         }).catch((err) => {
             console.error('Error: ', err);
@@ -462,7 +482,7 @@ const getBlockNumber_on_eth = () => {
                 if (scanBlockNumber == 0) {
                     scanBlockNumber = number;
                 }
-                console.log("max block number", number);
+                // console.log("max block number", number);
             }
         }).catch((error) => {
             console.log("get eth_blocknumber error");
@@ -485,12 +505,10 @@ const getData_on_eth = async () => {
 }
 
 function main() {
-    PairCreationMonitoring();
+    // PairCreationMonitoring();
 
-    setTimeout(PairCreationMonitoring, scanCycle);
-
-    // getBlockNumber_on_eth();
-    // getData_on_eth();
+    getBlockNumber_on_eth();
+    getData_on_eth();
 }
 
 module.exports = {
