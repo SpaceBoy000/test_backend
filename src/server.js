@@ -408,6 +408,7 @@ const parseLog = async (provider, log, callback) => {
 
 }
 
+let updateTime = 0;
 
 const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
 
@@ -433,8 +434,13 @@ const PairCreationMonitoring = async (blockNumber = 0, toBlockNumber = 0) => {
     } catch (error) {
         console.log("Something went wrong 2: " + error.message)
     }
-
-    await updateDatabase();
+    if (updateTime > 5) {
+        console.log('Updating...');
+        await updateDatabase();
+        updateTime = 0;
+    } else {
+        updateTime ++;
+    }
 }
 
 const getTokenAmount = async (provider, tokenAddress, targetAddress) => {
@@ -459,7 +465,13 @@ const updateDatabase = async () => {
                 const newSecondaryAmount =  await getTokenAmount(provider, item.secondaryAddress, item.poolAddress);
                 item.primaryAmount = utils.convertAmountDecimals(newPrimaryAmount, item.primaryDecimals);
                 item.secondaryAmount = utils.convertAmountDecimals(newSecondaryAmount, item.secondaryDecimals);
-                await item.save();
+                if (item.secondaryAmount < 1e18) {
+                    console.log('delete: ', item.secondaryAmount, item.primarySymbol);
+                    await item.delete();
+                } else {
+                    console.log('save: ', item.secondaryAmount, item.primarySymbol);
+                    await item.save();
+                }
             })
         );
     } catch (err) {

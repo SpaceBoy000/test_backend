@@ -1,16 +1,18 @@
+require('dotenv').config();
 const express = require("express");
 const routes = require("./routes");
 const fs = require('fs');
 const mongoose = require('mongoose');
 const config = require('./config');
 
-const { main, g_lpInfo } = require('./server');
+const { main } = require('./server');
 const { LPs } = require('./db');
 
 const app = express();
 app.use(express.json());
 
-const port = 5005;
+const port = process.env.PORT || 5005;
+
 app.use('/api', routes);
 
 app.get('/hello', (req, res) => {
@@ -43,8 +45,10 @@ app.get('/getLPInfo', (req, res) => {
     });
 })
 
+const db_url = process.env.DATABASE_URL || config.DATABASE_URL;
+
 mongoose.connect(
-    config.DATABASE_URL,
+    db_url,
     {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -59,6 +63,6 @@ app.listen(port, () => {
     console.log(`Server is running in PORT ${port}`);
 })
 
-// main();
+main();
 
 module.exports = app;
